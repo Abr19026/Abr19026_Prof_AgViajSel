@@ -3,6 +3,7 @@ from typing import (Any, FrozenSet, Tuple, NamedTuple, Iterable )
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+from heapq import *
 
 #Archivo con las definiciones de la clase grafo
 
@@ -81,7 +82,7 @@ class Grafo:
                 set_aristas.add(Arista((nodo, vecino), self.adyacencias[nodo][vecino]))
         return frozenset(set_aristas)
 
-    def costo_nodo(self, nodo1:tipo_nodo, nodo2: tipo_nodo) -> float:
+    def costo_arista(self, nodo1:tipo_nodo, nodo2: tipo_nodo) -> float:
         return self.adyacencias[nodo1][nodo2]
 
     def graficar(self):
@@ -103,3 +104,19 @@ class Grafo:
         nx.draw_networkx_edge_labels(grafo_nx, pos, edge_labels=edge_labels);
 
         plt.show()
+
+    def dijkstra(self, origen) -> dict[tipo_nodo, tuple[float, tipo_nodo]]:
+        """Implementación del algoritmo de Dijkstra para encontrar las distancias más cortas desde un nodo origen a todos los demás nodos en el grafo."""
+        distancias = {v: (float('inf'),None) for v in self.get_nodos()}
+        distancias[origen] = (0,None)
+        heap = [(0, origen)]
+        while heap:
+            (dist, v) = heap.heappop(heap)
+            if dist > distancias[v][0]:
+                continue
+            for w in self.get_vecinos(v):
+                distancia_nueva = dist + self.adyacencias[v][w]
+                if distancia_nueva < distancias[w][0]:
+                    distancias[w] = (distancia_nueva,v)
+                    heap.heappush(heap, (distancia_nueva, w))
+        return distancias
